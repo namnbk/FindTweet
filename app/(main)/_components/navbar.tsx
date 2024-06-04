@@ -1,4 +1,4 @@
-import { Home, LucideHome } from "lucide-react";
+import { Home} from "lucide-react";
 import Link from "next/link";
 
 const Navbar = () => {

@@ -1,4 +1,4 @@
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -24,11 +24,12 @@ async function getRequest(tweetID: string) {
     console.log("Here is the response", body);
     return body;
   } else {
+    console.log("No response", res.status);
     return null;
   }
 }
 
-const parse_tweet = (tweetResp: any) => {
+const parseTweet = (tweetResp: any) => {
   try {
     const res = tweetResp.data.tweetResult.result;
     return {
@@ -48,22 +49,24 @@ const parse_tweet = (tweetResp: any) => {
 export const fetchAndUpdate = action({
   args: {
     tweetId: v.string(),
+    fetchTime: v.number(),
   },
   handler: async (ctx, args) => {
     try {
       // Prepare tweet id
-      const { tweetId } = args;
+      const { tweetId, fetchTime } = args;
       // Make request
       const response = await getRequest(tweetId);
       if (!response) {
         return;
       }
       // Look into response
-      const metrics = parse_tweet(response);
+      const metrics = parseTweet(response);
       // Update db if get result
       if (metrics) {
-        await ctx.runMutation(api.tweet.createOrUpdateTweet, {
+        await ctx.runMutation(internal.tweet.createOrUpdateTweet, {
           tweetId: tweetId,
+          lastUpdate: fetchTime,
           ...metrics,
         });
       }

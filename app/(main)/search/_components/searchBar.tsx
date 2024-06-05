@@ -3,24 +3,36 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
-import { useMutation } from "convex/react";
-
+import { useMutation,} from "convex/react";
 import { useState } from "react";
+import { SearchType } from "../page";
 
-const SearchBar = () => {
+type SearchBarType = {
+  setSearch: React.Dispatch<React.SetStateAction<SearchType>>
+}
+const SearchBar = ({setSearch}: SearchBarType) => {
   // Variable
-  const [search, setSearch] = useState("");
-  const search_tweet = useMutation(api.tweet.addOrUpdateTweet)
-  
+  const searchTweet = useMutation(api.tweet.addOrUpdateTweet);
+  const [input, setInput] = useState("");
+
+  // Function
+  const onSearch = async () => {
+    // Update database
+    const searchId = await searchTweet({tweetId: input});
+    // Update UI
+    setSearch({searchId: searchId, searchValue: input});
+  }
+
+  // Render
   return (
-    <div className="flex items-center justify-center gap-x-1 p-2 md:px-[20%]">
+    <div className="flex items-center justify-center gap-x-1 p-2">
       <Input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
         className="px-2 focus-visible:ring-transparent bg-secondary"
-        placeholder="Filter by page title..."
+        placeholder="https://x.com/Sentdex/status/1797270237437448281"
       />
-      <Button onClick={() => search_tweet({tweetId: search})}>Search</Button>
+      <Button onClick={onSearch}>Search</Button>
     </div>
   );
 };

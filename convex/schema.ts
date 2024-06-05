@@ -11,5 +11,6 @@ export default defineSchema({
     retweetCount: v.optional(v.number()),
     viewCount: v.optional(v.number()),
     bookmarkCount: v.optional(v.number()),
+    lastUpdate: v.number(),
   }).index("by_tweet_id", ["tweetId"]),
 });

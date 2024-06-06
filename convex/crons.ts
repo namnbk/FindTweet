@@ -11,10 +11,10 @@ const crons = cronJobs();
 // );
 
 // Clean search tweet every 3 hours
-// crons.interval(
-//   "clean search tweet",
-//   { hours: 3 }, // every hours
-//   internal.tweet.cleanTweetSearches
-// );
+crons.interval(
+  "clean search tweet",
+  { hours: 3 }, // every hours
+  internal.tweet.cleanTweetSearches
+);
 
 export default crons;

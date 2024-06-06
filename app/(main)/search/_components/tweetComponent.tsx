@@ -27,7 +27,7 @@ type TweetType = {
   viewCount: number | undefined;
   bookmarkCount: number | undefined;
   userName: string | undefined;
-  tweetUrl: string;
+  tweetUrl: string | undefined;
 };
 
 export const TweetComponent = (tweet: TweetType) => {
@@ -83,7 +83,11 @@ export const TweetComponent = (tweet: TweetType) => {
       </CardContent>
       <CardFooter className="gap-2">
         <Button>Explore</Button>
-        <Link href={tweet.tweetUrl} rel="noopener noreferrer" target="_blank">
+        <Link
+          href={tweet.tweetUrl !== undefined ? tweet.tweetUrl : "/"}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
           <Button className="flex gap-1">
             <ExternalLink className="h-4 w-4" />
             Tweet

@@ -32,7 +32,7 @@ const TweetResult = ({
       viewCount={tweetSearch.ans.viewCount}
       bookmarkCount={tweetSearch.ans.bookmarkCount}
       userName={tweetSearch.ans.userName}
-      tweetUrl={tweetSearch.ans.tweetIdContent}
+      tweetUrl={tweetSearch.ans.tweetUrl}
     />
   );
 };

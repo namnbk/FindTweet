@@ -8,6 +8,7 @@ import { timeLimit } from "./constants";
 export const createOrUpdateTweet = internalMutation({
   args: {
     tweetIdContent: v.string(),
+    tweetUrl: v.optional(v.string()),
     favoriteCount: v.optional(v.number()),
     fullText: v.optional(v.string()),
     quoteCount: v.optional(v.number()),

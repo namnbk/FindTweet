@@ -71,7 +71,8 @@ export const fetchAndUpdate = action({
         const tweetId: Id<"tweets"> = await ctx.runMutation(
           internal.tweet.createOrUpdateTweet,
           {
-            tweetIdContent: searchContent,
+            tweetIdContent: searchTweetId,
+            tweetUrl: searchContent,
             ...metrics,
           }
         );

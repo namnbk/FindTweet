@@ -137,3 +137,28 @@ export const getFromSearchId = query({
     return { state: null, ans: null };
   },
 });
+
+// Keep every tweek up to date
+export const updateTweets = internalMutation({
+  args: {},
+  handler: async (ctx, args) => {},
+});
+
+// Clean unused searches
+export const cleanTweetSearches = internalMutation({
+  args: {},
+  handler: async (ctx, args) => {
+    // filtering out unused search
+    const unusedSearches = await ctx.db
+      .query("tweet_searches")
+      .filter((q) => q.eq(q.field("ans"), undefined))
+      .collect();
+    // batch all the unused search to delete
+    let deletes: Promise<void>[] = [];
+    for (let unusedSearch of unusedSearches) {
+      deletes.push(ctx.db.delete(unusedSearch._id));
+    }
+    // delete all
+    await Promise.all(deletes);
+  },
+});

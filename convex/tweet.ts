@@ -15,6 +15,7 @@ export const createOrUpdateTweet = internalMutation({
     retweetCount: v.optional(v.number()),
     viewCount: v.optional(v.number()),
     bookmarkCount: v.optional(v.number()),
+    userName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // prepare tweet id

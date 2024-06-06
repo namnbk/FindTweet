@@ -41,6 +41,7 @@ const parseTweet = (tweetResp: any) => {
       retweetCount: parseInt(res.legacy.retweet_count),
       viewCount: parseInt(res.views.count),
       bookmarkCount: parseInt(res.legacy.bookmark_count),
+      userName: res.core.user_results.result.legacy.name,
     };
   } catch (e) {
     return null;

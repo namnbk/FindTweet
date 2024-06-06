@@ -2,6 +2,7 @@ import { api, internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { parseTweetId } from "./utilities";
 
 const token =
   "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA";
@@ -48,17 +49,20 @@ const parseTweet = (tweetResp: any) => {
   }
 };
 
+// tweetIdContent is the search content
 export const fetchAndUpdate = action({
   args: {
-    tweetIdContent: v.string(),
+    searchContent: v.string(),
     tweetSearchId: v.id("tweet_searches"),
   },
   handler: async (ctx, args) => {
     // prepare
-    const { tweetIdContent, tweetSearchId } = args;
+    const { searchContent, tweetSearchId } = args;
     try {
+      // Parse out tweet id
+      const searchTweetId = parseTweetId(searchContent);
       // fetch twitter api request
-      const response = await getRequest(tweetIdContent);
+      const response = await getRequest(searchTweetId);
       // look into response
       let metrics;
       if (response && (metrics = parseTweet(response))) {
@@ -67,7 +71,7 @@ export const fetchAndUpdate = action({
         const tweetId: Id<"tweets"> = await ctx.runMutation(
           internal.tweet.createOrUpdateTweet,
           {
-            tweetIdContent: tweetIdContent,
+            tweetIdContent: searchContent,
             ...metrics,
           }
         );

@@ -85,7 +85,7 @@ export const searchTweet = mutation({
         });
         // schedule it
         await ctx.scheduler.runAfter(0, api.twitter.fetchAndUpdate, {
-          tweetIdContent: searchContent,
+          searchContent: searchContent,
           tweetSearchId: search._id,
         });
         // return
@@ -101,7 +101,7 @@ export const searchTweet = mutation({
       });
       // schedule a search
       await ctx.scheduler.runAfter(0, api.twitter.fetchAndUpdate, {
-        tweetIdContent: searchContent,
+        searchContent: searchContent,
         tweetSearchId: newSearchId,
       });
       return newSearchId;

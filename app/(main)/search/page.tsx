@@ -12,8 +12,8 @@ const SearchPage = () => {
 
   // Render
   return (
-    <div className="md:px-[15%] px-2 ">
-      <h1 className="text-4xl font-bold text-center mb-5">Find Your Tweet</h1>
+    <div className="md:px-[15%] px-2">
+      <h1 className="text-4xl font-bold text-center">Find Your Tweet</h1>
       <SearchBar setTweetSearchId={setTweetSearchId} />
       {tweetSearchId ? <TweetResult tweetSearchId={tweetSearchId} /> : <></>}
     </div>

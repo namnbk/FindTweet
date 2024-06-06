@@ -23,18 +23,15 @@ const SearchBar = ({ setTweetSearchId }: SearchBarType) => {
       setTweetSearchId(null);
       return;
     }
-    // Parse out tweet id
-    const splits = input.trim().split("/");
-    const searchTweetId = splits[splits.length - 1];
     // Search on database
-    const tweetSearchId = await searchTweet({ searchContent: searchTweetId });
+    const tweetSearchId = await searchTweet({ searchContent: input.trim() });
     // Update UI
     setTweetSearchId(tweetSearchId);
   };
 
   // Render
   return (
-    <div className="flex items-center justify-center gap-x-2 p-2">
+    <div className="flex items-center justify-center gap-x-2 p-2 mb-5">
       <button onClick={onSearch}>
         <Search className="h-4 w-4" />
       </button>

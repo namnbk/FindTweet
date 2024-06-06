@@ -17,6 +17,7 @@ import type {
 import type * as constants from "../constants.js";
 import type * as tweet from "../tweet.js";
 import type * as twitter from "../twitter.js";
+import type * as utilities from "../utilities.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   constants: typeof constants;
   tweet: typeof tweet;
   twitter: typeof twitter;
+  utilities: typeof utilities;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

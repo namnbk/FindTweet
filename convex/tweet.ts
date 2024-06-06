@@ -142,7 +142,21 @@ export const getFromSearchId = query({
 // Keep every tweek up to date
 export const updateTweets = internalMutation({
   args: {},
-  handler: async (ctx, args) => {},
+  handler: async (ctx, args) => {
+    // Get all tweets
+    const tweets = await ctx.db.query("tweets").collect();
+    // Spinning all updates
+    let updates: Promise<Id<"_scheduled_functions">>[] = [];
+    for (let tweet of tweets) {
+      updates.push(
+        ctx.scheduler.runAfter(0, api.tweet.searchTweet, {
+          searchContent: tweet.tweetIdContent,
+        })
+      );
+    }
+    // Run Promises
+    await Promise.all(updates);
+  },
 });
 
 // Clean unused searches

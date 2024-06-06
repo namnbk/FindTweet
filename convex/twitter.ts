@@ -1,4 +1,5 @@
 import { api, internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 
@@ -48,30 +49,42 @@ const parseTweet = (tweetResp: any) => {
 
 export const fetchAndUpdate = action({
   args: {
-    tweetId: v.string(),
-    fetchTime: v.number(),
+    tweetIdContent: v.string(),
+    tweetSearchId: v.id("tweet_searches"),
   },
   handler: async (ctx, args) => {
+    // prepare
+    const { tweetIdContent, tweetSearchId } = args;
     try {
-      // Prepare tweet id
-      const { tweetId, fetchTime } = args;
-      // Make request
-      const response = await getRequest(tweetId);
-      if (!response) {
-        return;
-      }
-      // Look into response
-      const metrics = parseTweet(response);
-      // Update db if get result
-      if (metrics) {
-        await ctx.runMutation(internal.tweet.createOrUpdateTweet, {
-          tweetId: tweetId,
-          lastUpdate: fetchTime,
-          ...metrics,
+      // fetch twitter api request
+      const response = await getRequest(tweetIdContent);
+      // look into response
+      let metrics;
+      if (response && (metrics = parseTweet(response))) {
+        // fetch success
+        // update tweet
+        const tweetId: Id<"tweets"> = await ctx.runMutation(
+          internal.tweet.createOrUpdateTweet,
+          {
+            tweetIdContent: tweetIdContent,
+            ...metrics,
+          }
+        );
+        // update tweet search
+        console.log("Found API fetch and update the searhc");
+        await ctx.runMutation(internal.tweet.updateTweetSearch, {
+          tweetSearchId: tweetSearchId,
+          ans: tweetId,
         });
       }
     } catch (e) {
       console.log("Error when request", e);
+    } finally {
+      // Finally, the search is done
+      await ctx.runMutation(internal.tweet.updateTweetSearch, {
+        tweetSearchId: tweetSearchId,
+        state: "Done",
+      });
     }
   },
 });

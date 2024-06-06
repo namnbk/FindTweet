@@ -14,6 +14,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as constants from "../constants.js";
 import type * as tweet from "../tweet.js";
 import type * as twitter from "../twitter.js";
 
@@ -26,6 +27,7 @@ import type * as twitter from "../twitter.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  constants: typeof constants;
   tweet: typeof tweet;
   twitter: typeof twitter;
 }>;

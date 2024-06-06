@@ -4,23 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/convex/_generated/api";
 import { useMutation,} from "convex/react";
-import { useState } from "react";
-import { SearchType } from "../page";
+import { SetStateAction, useState } from "react";
+import { Id } from "@/convex/_generated/dataModel";
 
 type SearchBarType = {
-  setSearch: React.Dispatch<React.SetStateAction<SearchType>>
-}
-const SearchBar = ({setSearch}: SearchBarType) => {
+  setTweetSearchId: React.Dispatch<SetStateAction<Id<"tweet_searches"> | null>>
+};
+
+const SearchBar = ({setTweetSearchId}: SearchBarType) => {
   // Variable
-  const searchTweet = useMutation(api.tweet.addOrUpdateTweet);
+  const searchTweet = useMutation(api.tweet.searchTweet);
   const [input, setInput] = useState("");
 
   // Function
   const onSearch = async () => {
     // Update database
-    const searchId = await searchTweet({tweetId: input});
+    const tweetSearchId = await searchTweet({searchContent: input});
     // Update UI
-    setSearch({searchId: searchId, searchValue: input});
+    setTweetSearchId(tweetSearchId);
   }
 
   // Render

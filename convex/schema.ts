@@ -3,7 +3,7 @@ import { v } from "convex/values";
 
 export default defineSchema({
   tweets: defineTable({
-    tweetId: v.string(),
+    tweetIdContent: v.string(),
     favoriteCount: v.optional(v.number()),
     fullText: v.optional(v.string()),
     quoteCount: v.optional(v.number()),
@@ -11,6 +11,12 @@ export default defineSchema({
     retweetCount: v.optional(v.number()),
     viewCount: v.optional(v.number()),
     bookmarkCount: v.optional(v.number()),
-    lastUpdate: v.number(),
-  }).index("by_tweet_id", ["tweetId"]),
+  }).index("by_tweet_id_content", ["tweetIdContent"]),
+
+  tweet_searches: defineTable({
+    searchContent: v.string(),
+    state: v.union(v.literal("Done"), v.literal("Pending")),
+    ans: v.optional(v.id("tweets")),
+    lastSearchTime: v.number(),
+  }).index("by_search", ["searchContent"]),
 });

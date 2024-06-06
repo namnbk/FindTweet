@@ -2,11 +2,12 @@ import { api } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { timeLimit } from "./constants";
 
 // Update the tweet table or create one if it doesn't exist
 export const createOrUpdateTweet = internalMutation({
   args: {
-    tweetId: v.string(),
+    tweetIdContent: v.string(),
     favoriteCount: v.optional(v.number()),
     fullText: v.optional(v.string()),
     quoteCount: v.optional(v.number()),
@@ -14,83 +15,124 @@ export const createOrUpdateTweet = internalMutation({
     retweetCount: v.optional(v.number()),
     viewCount: v.optional(v.number()),
     bookmarkCount: v.optional(v.number()),
-    lastUpdate: v.number(),
   },
   handler: async (ctx, args) => {
     // prepare tweet id
-    const { tweetId } = args;
+    const { tweetIdContent } = args;
     // find according tweet
     const tweet = await ctx.db
       .query("tweets")
-      .withIndex("by_tweet_id", (q) => q.eq("tweetId", tweetId))
+      .withIndex("by_tweet_id_content", (q) =>
+        q.eq("tweetIdContent", tweetIdContent)
+      )
       .first();
     // create or update
+    let res: Id<"tweets">;
     if (tweet) {
-      return await ctx.db.patch(tweet._id, args);
+      await ctx.db.patch(tweet._id, args);
+      res = tweet._id;
     } else {
-      return await ctx.db.insert("tweets", args);
+      const tweetInsert = await ctx.db.insert("tweets", args);
+      res = tweetInsert;
     }
+    return res;
   },
 });
 
-// Add/Update tweet table so that it reflects real data
-const timeLimit = 20000; // update if more than 10 seconds
-export const addOrUpdateTweet = mutation({
+// Update Tweet Search
+export const updateTweetSearch = internalMutation({
   args: {
-    tweetId: v.string(),
+    tweetSearchId: v.id("tweet_searches"),
+    searchContent: v.optional(v.string()),
+    state: v.optional(v.union(v.literal("Done"), v.literal("Pending"))),
+    ans: v.optional(v.id("tweets")),
+    lastSearchTime: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // prepare tweet id
-    const { tweetId } = args;
-    // get the corresponding tweet
-    const tweet = await ctx.db
-      .query("tweets")
-      .withIndex("by_tweet_id", (q) => q.eq("tweetId", tweetId))
+    // prepare
+    const { tweetSearchId, ...params } = args;
+    // patch
+    await ctx.db.patch(tweetSearchId, params);
+    return tweetSearchId;
+  },
+});
+
+// Add or update tweet table so that it reflects real data
+export const searchTweet = mutation({
+  args: {
+    searchContent: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // prepare
+    const { searchContent } = args;
+    const searchTimeNow = Date.now();
+    // see if this search appear before
+    const search = await ctx.db
+      .query("tweet_searches")
+      .withIndex("by_search", (q) => q.eq("searchContent", searchContent))
       .first();
-    // add or update new value to this tweet every time limit interval
-    const dateNow = Date.now();
-    if (tweet === null || dateNow - tweet.lastUpdate > timeLimit) {
-      const scheduleId: Id<"_scheduled_functions"> =
-        await ctx.scheduler.runAfter(0, api.twitter.fetchAndUpdate, {
-          tweetId: tweetId,
-          fetchTime: dateNow,
+    // if a search is found
+    if (search) {
+      // check within time interval
+      if (searchTimeNow - search.lastSearchTime <= timeLimit) {
+        return search._id;
+      } else {
+        // if out of date, then about to start the search again
+        await ctx.db.patch(search._id, {
+          state: "Pending",
+          lastSearchTime: searchTimeNow,
         });
-      return scheduleId;
+        // schedule it
+        await ctx.scheduler.runAfter(0, api.twitter.fetchAndUpdate, {
+          tweetIdContent: searchContent,
+          tweetSearchId: search._id,
+        });
+        // return
+        return search._id;
+      }
+    } else {
+      // otherwise, if no search is found
+      // create a search
+      const newSearchId = await ctx.db.insert("tweet_searches", {
+        searchContent: searchContent,
+        state: "Pending",
+        lastSearchTime: searchTimeNow,
+      });
+      // schedule a search
+      await ctx.scheduler.runAfter(0, api.twitter.fetchAndUpdate, {
+        tweetIdContent: searchContent,
+        tweetSearchId: newSearchId,
+      });
+      return newSearchId;
     }
-    // 0 meaning no mutation is necessary
-    return 0;
   },
 });
 
 // Query the exact tweet by tweet id
 export type statusType = "Done" | "Pending";
 
-export const getTweet = query({
+export const getFromSearchId = query({
   args: {
-    tweetId: v.string(),
-    scheduleId: v.union(v.id("_scheduled_functions"), v.literal(0)),
+    tweetSearchId: v.id("tweet_searches"),
   },
   handler: async (ctx, args) => {
-    // Tweet id
-    const { tweetId, scheduleId } = args;
-    // Check the result of the scheduled function first
-    let scheduledStatus;
-    // Query the result depending on status
-    if (
-      scheduleId === 0 ||
-      ((scheduledStatus = await ctx.db.system.get(scheduleId)) &&
-        (scheduledStatus.state.kind === "success" ||
-          scheduledStatus.state.kind === "failed"))
-    ) {
-      const tweet = await ctx.db
-        .query("tweets")
-        .withIndex("by_tweet_id", (q) => q.eq("tweetId", tweetId))
-        .first();
-      const status: statusType = "Done";
-      return { status: status, tweet: tweet };
+    // prepare
+    const { tweetSearchId } = args;
+    // get the tweet search
+    const search = await ctx.db.get(tweetSearchId);
+    // get the tweet response
+    if (search) {
+      const ans = search.ans;
+      let tweet = null;
+      if (ans) {
+        tweet = await ctx.db
+          .query("tweets")
+          .withIndex("by_id", (q) => q.eq("_id", ans))
+          .first();
+      }
+      return { state: search.state, ans: tweet };
     }
-    // Otherwise, return the status only
-    const status: statusType = "Pending";
-    return { status: status };
+    // state is null meaning the provided id doesn't exist
+    return { state: null, ans: null };
   },
 });

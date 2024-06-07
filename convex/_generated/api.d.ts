@@ -16,6 +16,8 @@ import type {
 } from "convex/server";
 import type * as constants from "../constants.js";
 import type * as crons from "../crons.js";
+import type * as embedding from "../embedding.js";
+import type * as search from "../search.js";
 import type * as tweet from "../tweet.js";
 import type * as twitter from "../twitter.js";
 import type * as utilities from "../utilities.js";
@@ -31,6 +33,8 @@ import type * as utilities from "../utilities.js";
 declare const fullApi: ApiFromModules<{
   constants: typeof constants;
   crons: typeof crons;
+  embedding: typeof embedding;
+  search: typeof search;
   tweet: typeof tweet;
   twitter: typeof twitter;
   utilities: typeof utilities;

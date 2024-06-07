@@ -13,7 +13,17 @@ export default defineSchema({
     viewCount: v.optional(v.number()),
     bookmarkCount: v.optional(v.number()),
     userName: v.optional(v.string()),
-  }).index("by_tweet_id_content", ["tweetIdContent"]),
+    embeddingId: v.optional(v.id("tweetEmbeddings")),
+  })
+    .index("by_tweet_id_content", ["tweetIdContent"])
+    .index("by_embeddingId", ["embeddingId"]),
+
+  tweetEmbeddings: defineTable({
+    embedding: v.array(v.float64()),
+  }).vectorIndex("by_embedding", {
+    vectorField: "embedding",
+    dimensions: 1536,
+  }),
 
   tweet_searches: defineTable({
     searchContent: v.string(),

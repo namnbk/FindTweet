@@ -1,8 +1,29 @@
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
-import { internalMutation, mutation, query } from "./_generated/server";
+import {
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
+} from "./_generated/server";
 import { v } from "convex/values";
 import { timeLimit } from "./constants";
+import { embed } from "./embedding";
+
+// Get the full text of a tweet id
+export const getTweetEmbedding = internalQuery({
+  args: {
+    tweetId: v.id("tweets"),
+  },
+  handler: async (ctx, args) => {
+    // Get the according tweet
+    const tweet = await ctx.db.get(args.tweetId);
+    if (tweet && tweet.embeddingId) {
+      const embed = await ctx.db.get(tweet.embeddingId);
+      if (embed) return { embedId: embed._id, embedValues: embed.embedding };
+    }
+  },
+});
 
 // Update the tweet table or create one if it doesn't exist
 export const createOrUpdateTweet = internalMutation({
@@ -31,11 +52,22 @@ export const createOrUpdateTweet = internalMutation({
     // create or update
     let res: Id<"tweets">;
     if (tweet) {
+      // if tweet alreayd exist, then update the args
       await ctx.db.patch(tweet._id, args);
       res = tweet._id;
     } else {
-      const tweetInsert = await ctx.db.insert("tweets", args);
-      res = tweetInsert;
+      // otherwise, insert new tweet into the table
+      const tweetInsertId = await ctx.db.insert("tweets", args);
+      // Kick off an action to generate an embedding for this movie
+      await ctx.scheduler.runAfter(
+        0,
+        internal.embedding.generateAndAddEmbedding,
+        {
+          tweetId: tweetInsertId,
+          fullText: args.fullText || "No Tweet Description",
+        }
+      );
+      res = tweetInsertId;
     }
     return res;
   },

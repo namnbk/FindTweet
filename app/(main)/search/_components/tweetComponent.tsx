@@ -1,6 +1,7 @@
 import {
   Bookmark,
   Car,
+  CornerLeftDown,
   ExternalLink,
   Eye,
   Heart,
@@ -28,13 +29,17 @@ type TweetType = {
   bookmarkCount: number | undefined;
   userName: string | undefined;
   tweetUrl: string | undefined;
+  cardTilte?: string;
+  onSearchSimilar?: () => void;
 };
 
 export const TweetComponent = (tweet: TweetType) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Tweet Found</CardTitle>
+        <CardTitle>
+          {tweet.cardTilte ? tweet.cardTilte : "Tweet Found"}
+        </CardTitle>
         <CardDescription>
           by {tweet.userName ? tweet.userName : "Guest"}
         </CardDescription>
@@ -82,7 +87,6 @@ export const TweetComponent = (tweet: TweetType) => {
         </div>
       </CardContent>
       <CardFooter className="gap-2">
-        <Button>Explore</Button>
         <Link
           href={tweet.tweetUrl !== undefined ? tweet.tweetUrl : "/"}
           rel="noopener noreferrer"
@@ -93,6 +97,17 @@ export const TweetComponent = (tweet: TweetType) => {
             Tweet
           </Button>
         </Link>
+        {tweet.onSearchSimilar ? (
+          <Button
+            className="flex gap-1"
+            onClick={() => tweet.onSearchSimilar!()}
+          >
+            <CornerLeftDown className="h-4 w-4" />
+            Similar Tweet
+          </Button>
+        ) : (
+          <></>
+        )}
       </CardFooter>
     </Card>
   );

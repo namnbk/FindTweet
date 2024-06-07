@@ -9,9 +9,10 @@ import { Search } from "lucide-react";
 
 type SearchBarType = {
   setTweetSearchId: React.Dispatch<SetStateAction<Id<"tweet_searches"> | null>>;
+  setSimilarTweetOn: React.Dispatch<SetStateAction<boolean>>;
 };
 
-const SearchBar = ({ setTweetSearchId }: SearchBarType) => {
+const SearchBar = ({ setTweetSearchId, setSimilarTweetOn }: SearchBarType) => {
   // Variable
   const searchTweet = useMutation(api.tweet.searchTweet);
   const [input, setInput] = useState("");
@@ -28,6 +29,7 @@ const SearchBar = ({ setTweetSearchId }: SearchBarType) => {
     const tweetSearchId = await searchTweet({ searchContent: input.trim() });
     // Update UI
     setTweetSearchId(tweetSearchId);
+    setSimilarTweetOn(false);
   };
 
   const onKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -42,7 +44,7 @@ const SearchBar = ({ setTweetSearchId }: SearchBarType) => {
 
   // Render
   return (
-    <div className="flex items-center justify-center gap-x-2 p-2 mb-5">
+    <div className="flex items-center justify-center gap-x-2 p-2 mb-5 mt-2">
       <button onClick={onSearch}>
         <Search className="h-4 w-4" />
       </button>

@@ -25,6 +25,19 @@ export const getTweetEmbedding = internalQuery({
   },
 });
 
+const howPopular = (view: number | undefined, love: number | undefined) => {
+  // get a weighted metrics
+  const score = (view ? view : 0) * 0.7 + (love ? love : 0) * 0.3;
+  // get the according message
+  if (score < 80000) {
+    return ". This post is not popular";
+  } else if (score < 900000) {
+    return ". This post is quite popular";
+  } else {
+    return ". This post is very popular";
+  }
+};
+
 // Update the tweet table or create one if it doesn't exist
 export const createOrUpdateTweet = internalMutation({
   args: {
@@ -64,7 +77,11 @@ export const createOrUpdateTweet = internalMutation({
         internal.embedding.generateAndAddEmbedding,
         {
           tweetId: tweetInsertId,
-          fullText: args.fullText || "No Tweet Description",
+          fullText:
+            args.fullText +
+              howPopular(args.viewCount, args.favoriteCount) +
+              `{. By ${args.userName ? args.userName : "guest"}}` ||
+            "No Tweet Description",
         }
       );
       res = tweetInsertId;

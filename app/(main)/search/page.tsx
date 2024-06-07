@@ -9,13 +9,25 @@ const SearchPage = () => {
   // Hooks
   const [tweetSearchId, setTweetSearchId] =
     useState<Id<"tweet_searches"> | null>(null);
+  const [similarTweetOn, setSimilarTweetOn] = useState(false);
 
   // Render
   return (
-    <div className="md:px-[15%] px-2">
+    <div className="md:px-[15%] px-2 pb-2">
       <h1 className="text-4xl font-bold text-center">Find Your Tweet</h1>
-      <SearchBar setTweetSearchId={setTweetSearchId} />
-      {tweetSearchId ? <TweetResult tweetSearchId={tweetSearchId} /> : <></>}
+      <SearchBar
+        setTweetSearchId={setTweetSearchId}
+        setSimilarTweetOn={setSimilarTweetOn}
+      />
+      {tweetSearchId ? (
+        <TweetResult
+          tweetSearchId={tweetSearchId}
+          similarTweetOn={similarTweetOn}
+          setSimilarTweetOn={setSimilarTweetOn}
+        />
+      ) : (
+        <></>
+      )}
     </div>
   );
 };

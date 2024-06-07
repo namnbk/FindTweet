@@ -4,11 +4,11 @@ import { internal } from "./_generated/api";
 const crons = cronJobs();
 
 // Update tweet every 15 minutes
-// crons.interval(
-//   "update tweet",
-//   { minutes: 15 }, // every minute
-//   internal.tweet.updateTweets
-// );
+crons.interval(
+  "update tweet",
+  { minutes: 15 }, // every minute
+  internal.tweet.updateTweets
+);
 
 // Clean unused search tweet every 3 hours
 crons.interval(

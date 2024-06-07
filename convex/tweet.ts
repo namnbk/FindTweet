@@ -9,6 +9,7 @@ import {
 import { v } from "convex/values";
 import { timeLimit } from "./constants";
 import { embed } from "./embedding";
+import { paginationOptsValidator } from "convex/server";
 
 // Get the full text of a tweet id
 export const getTweetEmbedding = internalQuery({
@@ -224,5 +225,19 @@ export const cleanTweetSearches = internalMutation({
     }
     // delete all
     await Promise.all(deletes);
+  },
+});
+
+// Return all tweets in the database
+// in descending order of view, with pagination
+export const getAllTweets = query({
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const tweets = await ctx.db
+      .query("tweets")
+      .withIndex("by_view")
+      .order("desc")
+      .paginate(args.paginationOpts);
+    return tweets;
   },
 });

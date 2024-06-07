@@ -16,6 +16,7 @@ export default defineSchema({
     embeddingId: v.optional(v.id("tweetEmbeddings")),
   })
     .index("by_tweet_id_content", ["tweetIdContent"])
+    .index("by_view", ["viewCount"])
     .index("by_embeddingId", ["embeddingId"]),
 
   tweetEmbeddings: defineTable({

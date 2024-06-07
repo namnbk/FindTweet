@@ -27,7 +27,7 @@ const SimilarTweetsResult = ({
       <div className="flex flex-col gap-y-5 mt-3">
         <h1 className="text-2xl font-bold text-center">Similar Tweets</h1>
         {tweetResults.map((tweetResult) => (
-          <div id={tweetResult._id}>
+          <div key={tweetResult._id}>
             <TweetComponent
               favoriteCount={tweetResult.favoriteCount}
               fullText={tweetResult.fullText}

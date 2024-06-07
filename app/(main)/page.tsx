@@ -10,7 +10,7 @@ export default function Home() {
         width="400"
         alt="Error"
       />
-      <h1 className="text-7xl font-bold">Let's Get Tweet</h1>
+      <h1 className="text-7xl font-bold">{"Let's Get Tweet"}</h1>
     </div>
   );
 }
